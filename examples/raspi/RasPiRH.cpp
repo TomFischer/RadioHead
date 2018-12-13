@@ -22,6 +22,11 @@
 #include <RHReliableDatagram.h>
 #include <RH_NRF24.h>
 
+#include <chrono>
+#include <ctime>
+#include <iomanip>
+#include <iostream>
+
 //Function Definitions
 void sig_handler(int sig);
 void printbuffer(uint8_t buff[], int len);
@@ -111,7 +116,10 @@ int main (int argc, const char* argv[] )
         //Serial.println((char*)buf);
 	memcpy(&temperature, &buf[1], 4);
 	memcpy(&humidity, &buf[5], 4);
-	printf("received humidity: %f, temperature: %f from station %d\n", humidity, temperature, from);
+	auto now = std::chrono::system_clock::now();
+	std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+	std::cout << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " received humidity: " << humidity << ", temperature: " << temperature << " from station #" << int(from) << std::endl;
+	//printf("received humidity: %f, temperature: %f from station %d\n", humidity, temperature, from);
       }
     }
     /* End Reliable Datagram Code */
