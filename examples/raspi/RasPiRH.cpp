@@ -26,7 +26,6 @@
 void sig_handler(int sig);
 void printbuffer(uint8_t buff[], int len);
 
-#define CLIENT_ADDRESS 1
 #define SERVER_ADDRESS 2
 
 // Create an instance of a driver
@@ -70,6 +69,9 @@ int main (int argc, const char* argv[] )
 
   uint8_t buf[RH_NRF24_MAX_MESSAGE_LEN];
 
+  float temperature = 0.0;
+  float humidity = 0.0;
+
   //Begin the main body of code
   while (true)
   {
@@ -103,10 +105,13 @@ int main (int argc, const char* argv[] )
       uint8_t from;
       if (manager.recvfromAck(buf, &len, &from))
       {
-        Serial.print("got request from : 0x");
-        Serial.print(from, HEX);
-        Serial.print(": ");
-        Serial.println((char*)buf);
+        //Serial.print("got request from : 0x");
+        //Serial.print(from, HEX);
+        //Serial.print(": ");
+        //Serial.println((char*)buf);
+	memcpy(&temperature, &buf[1], 4);
+	memcpy(&humidity, &buf[5], 4);
+	printf("received humidity: %f, temperature: %f from station %d\n", humidity, temperature, from);
       }
     }
     /* End Reliable Datagram Code */
