@@ -110,16 +110,23 @@ int main (int argc, const char* argv[] )
       uint8_t from;
       if (manager.recvfromAck(buf, &len, &from))
       {
-        //Serial.print("got request from : 0x");
-        //Serial.print(from, HEX);
-        //Serial.print(": ");
-        //Serial.println((char*)buf);
-	memcpy(&temperature, &buf[1], 4);
-	memcpy(&humidity, &buf[5], 4);
-	auto now = std::chrono::system_clock::now();
-	std::time_t now_c = std::chrono::system_clock::to_time_t(now);
-	std::cout << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " received humidity: " << humidity << ", temperature: " << temperature << " from station #" << int(from) << std::endl;
+		auto now = std::chrono::system_clock::now();
+		std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+		switch (from)
+		{
+		case 3:
+			memcpy(&temperature, &buf[1], 4);
+			memcpy(&humidity, &buf[5], 4);
+			std::cout << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " received humidity: " << humidity << ", temperature: " << temperature << " from station #" << int(from) << std::endl;
 	//printf("received humidity: %f, temperature: %f from station %d\n", humidity, temperature, from);
+			break;
+		case 5:
+			memcpy(&temperature, &buf[1], 4);
+			std::cout << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " received temperature: " << temperature << " from station #" << int(from) << std::endl;
+			break;
+		default:
+			std::cout << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " received message from unknown station #" << int(from) << std::endl;
+		}
       }
     }
     /* End Reliable Datagram Code */
