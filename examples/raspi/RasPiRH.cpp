@@ -118,7 +118,11 @@ int main (int argc, const char* argv[] )
 			memcpy(&temperature, &buf[1], 4);
 			memcpy(&humidity, &buf[5], 4);
 			std::cout << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " received humidity: " << humidity << ", temperature: " << temperature << " from station #" << int(from) << std::endl;
-	//printf("received humidity: %f, temperature: %f from station %d\n", humidity, temperature, from);
+			break;
+		case 4:
+			memcpy(&temperature, &buf[1], 4);
+			memcpy(&humidity, &buf[5], 4);
+			std::cout << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " received humidity: " << humidity << ", temperature: " << temperature << " from station #" << int(from) << std::endl;
 			break;
 		case 5:
 			memcpy(&temperature, &buf[1], 4);
