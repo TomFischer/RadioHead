@@ -76,6 +76,7 @@ int main (int argc, const char* argv[] )
 
   float temperature = 0.0;
   float humidity = 0.0;
+  float value3 = 0.0;
 
   //Begin the main body of code
   while (true)
@@ -127,6 +128,12 @@ int main (int argc, const char* argv[] )
 		case 5:
 			memcpy(&temperature, &buf[1], 4);
 			std::cout << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " received temperature: " << temperature << " from station #" << int(from) << std::endl;
+			break;
+		case 6:
+			memcpy(&temperature, &buf[1], 4);
+			memcpy(&humidity, &buf[5], 4);
+			memcpy(&value3, &buf[9], 4);
+			std::cout << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " received pressure: " << humidity << ", bmp280_temperature: " << temperature << ", ds1820_temperature: " << value3 << " from station #" << int(from) << std::endl;
 			break;
 		default:
 			std::cout << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " received message from unknown station #" << int(from) << std::endl;
