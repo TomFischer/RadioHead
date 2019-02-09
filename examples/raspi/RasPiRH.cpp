@@ -135,6 +135,11 @@ int main (int argc, const char* argv[] )
 			memcpy(&value3, &buf[9], 4);
 			std::cout << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " received pressure: " << humidity << ", bmp280_temperature: " << temperature << ", ds1820_temperature: " << value3 << " from station #" << int(from) << std::endl;
 			break;
+		case 7:
+			memcpy(&temperature, &buf[1], 4);
+			memcpy(&humidity, &buf[5], 4);
+			std::cout << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " received humidity: " << humidity << ", temperature: " << temperature << " from station #" << int(from) << std::endl;
+			break;
 		default:
 			std::cout << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " received message from unknown station #" << int(from) << std::endl;
 		}
