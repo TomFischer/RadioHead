@@ -7,7 +7,7 @@
 // Use the Makefile in this directory:
 // cd example/raspi
 // make
-// sudo ./RasPiRH
+// sudo ./receiveMeasurements
 //
 // Creates a RHReliableDatagram manager and listens and prints for reliable datagrams
 // sent to it on the default Channel 2.
@@ -26,6 +26,7 @@
 #include <ctime>
 #include <iomanip>
 #include <iostream>
+#include <fstream>
 
 //Function Definitions
 void sig_handler(int sig);
@@ -53,22 +54,11 @@ int main (int argc, const char* argv[] )
     return 1;
   }
 
-  printf( "\nRasPiRH Tester Startup\n\n" );
-
-  /* Begin Driver Only Init Code
-  if (!nrf24.init())
-    Serial.println("init failed");
-  // Defaults after init are 2.402 GHz (channel 2), 2Mbps, 0dBm
-  if (!nrf24.setChannel(1))
-    Serial.println("setChannel failed");
-  if (!nrf24.setRF(RH_NRF24::DataRate2Mbps, RH_NRF24::TransmitPower0dBm))
-    Serial.println("setRF failed");
-  End Driver Only Init Code */
-
   /* Begin Reliable Datagram Init Code */
   if (!manager.init())
   {
     printf( "Init failed\n" );
+	return 1;
   }
   /* End Reliable Datagram Init Code */
 
@@ -78,30 +68,17 @@ int main (int argc, const char* argv[] )
   float humidity = 0.0;
   float value3 = 0.0;
 
+  std::ofstream station3("/home/alarm/data/station3/data.txt", std::ios::app);
+  std::ofstream station4("/home/alarm/data/station4/data.txt", std::ios::app);
+  std::ofstream station5("/home/alarm/data/station5/data.txt", std::ios::app);
+  std::ofstream station6("/home/alarm/data/station6/data.txt", std::ios::app);
+  std::ofstream station7("/home/alarm/data/station7/data.txt", std::ios::app);
+
   //Begin the main body of code
   while (true)
   {
     uint8_t len = sizeof(buf);
     uint8_t from, to, id, flags;
-
-    /* Begin Driver Only code
-    if (nrf24.available())
-    {
-      // Should be a message for us now
-      //uint8_t buf[RH_NRF24_MAX_MESSAGE_LEN];
-      uint8_t len = sizeof(buf);
-      if (nrf24.recv(buf, &len))
-      {
-        Serial.print("got request: ");
-        Serial.println((char*)buf);
-        Serial.println("");
-      }
-      else
-      {
-        Serial.println("recv failed");
-      }
-    }
-    End Driver Only Code*/
 
     /* Begin Reliable Datagram Code */
     if (manager.available())
@@ -118,27 +95,32 @@ int main (int argc, const char* argv[] )
 		case 3:
 			memcpy(&temperature, &buf[1], 4);
 			memcpy(&humidity, &buf[5], 4);
-			std::cout << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " received humidity: " << humidity << ", temperature: " << temperature << " from station #" << int(from) << std::endl;
+			station3 << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " " << humidity << " " << temperature << std::endl;
+			//std::cout << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " received humidity: " << humidity << ", temperature: " << temperature << " from station #" << int(from) << std::endl;
 			break;
 		case 4:
 			memcpy(&temperature, &buf[1], 4);
 			memcpy(&humidity, &buf[5], 4);
-			std::cout << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " received humidity: " << humidity << ", temperature: " << temperature << " from station #" << int(from) << std::endl;
+			station4 << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " " << humidity << " " << temperature << std::endl;
+			//std::cout << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " received humidity: " << humidity << ", temperature: " << temperature << " from station #" << int(from) << std::endl;
 			break;
 		case 5:
 			memcpy(&temperature, &buf[1], 4);
-			std::cout << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " received temperature: " << temperature << " from station #" << int(from) << std::endl;
+			station5 << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " " << temperature << std::endl;
+			//std::cout << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " received temperature: " << temperature << " from station #" << int(from) << std::endl;
 			break;
 		case 6:
 			memcpy(&temperature, &buf[1], 4);
 			memcpy(&humidity, &buf[5], 4);
 			memcpy(&value3, &buf[9], 4);
+			//station6 << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " " << humidity << " " << temperature << " " << value3 << std::endl;
 			std::cout << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " received pressure: " << humidity << ", bmp280_temperature: " << temperature << ", ds1820_temperature: " << value3 << " from station #" << int(from) << std::endl;
 			break;
 		case 7:
 			memcpy(&temperature, &buf[1], 4);
 			memcpy(&humidity, &buf[5], 4);
-			std::cout << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " received humidity: " << humidity << ", temperature: " << temperature << " from station #" << int(from) << std::endl;
+			station7 << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " " << humidity << " " << temperature << std::endl;
+			//std::cout << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " received humidity: " << humidity << ", temperature: " << temperature << " from station #" << int(from) << std::endl;
 			break;
 		default:
 			std::cout << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " received message from unknown station #" << int(from) << std::endl;
@@ -152,10 +134,13 @@ int main (int argc, const char* argv[] )
       printf("\n---CTRL-C Caught - Exiting---\n");
       break;
     }
-    //sleep(1);
-    delay(25);
+    delay(100);
   }
-  printf( "\nRasPiRH Tester Ending\n" );
+  station3.close();
+  station4.close();
+  station5.close();
+  station6.close();
+  station7.close();
   bcm2835_close();
   return 0;
 }
