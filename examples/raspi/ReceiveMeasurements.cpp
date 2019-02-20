@@ -73,6 +73,7 @@ int main (int argc, const char* argv[] )
   std::ofstream station5("/home/alarm/data/station5/data.txt", std::ios::app);
   std::ofstream station6("/home/alarm/data/station6/data.txt", std::ios::app);
   std::ofstream station7("/home/alarm/data/station7/data.txt", std::ios::app);
+  std::ofstream station8("/home/alarm/data/station8/data.txt", std::ios::app);
 
   //Begin the main body of code
   while (true)
@@ -122,6 +123,20 @@ int main (int argc, const char* argv[] )
 			station7 << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " " << humidity << " " << temperature << std::endl;
 			//std::cout << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " received humidity: " << humidity << ", temperature: " << temperature << " from station #" << int(from) << std::endl;
 			break;
+		case 8:
+			station8 << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S");
+			memcpy(&temperature, &buf[1], 4);
+			memcpy(&humidity, &buf[5], 4);
+			station8 << " " << humidity << " " << temperature;
+			memcpy(&temperature, &buf[9], 4);
+			memcpy(&humidity, &buf[13], 4);
+			station8 << " " << humidity << " " << temperature;
+			memcpy(&temperature, &buf[17], 4);
+			memcpy(&humidity, &buf[21], 4);
+			station8 << " " << humidity << " " << temperature;
+			station8 << std::endl;
+			//std::cout << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " received humidity: " << humidity << ", temperature: " << temperature << " from station #" << int(from) << std::endl;
+			break;
 		default:
 			std::cout << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " received message from unknown station #" << int(from) << std::endl;
 		}
@@ -141,6 +156,7 @@ int main (int argc, const char* argv[] )
   station5.close();
   station6.close();
   station7.close();
+  station8.close();
   bcm2835_close();
   return 0;
 }
