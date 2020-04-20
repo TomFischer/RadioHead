@@ -9,7 +9,7 @@ LIBS          = -lbcm2835
 RADIOHEADBASE = ../..
 INCLUDE       = -I$(RADIOHEADBASE)
 
-all: RasPiRH receiveMeasurements
+all: RasPiRH receiveMeasurements collectMeasurements
 
 RasPi.o: $(RADIOHEADBASE)/RHutil/RasPi.cpp
 	$(CC) $(CFLAGS) -c $(RADIOHEADBASE)/RHutil/RasPi.cpp $(INCLUDE)
@@ -18,6 +18,9 @@ RasPiRH.o: RasPiRH.cpp
 	$(CC) $(CFLAGS) -c $(INCLUDE) $<
 
 ReceiveMeasurements.o: ReceiveMeasurements.cpp
+	$(CC) $(CFLAGS) -c $(INCLUDE) $<
+
+collectMeasurements.o: CollectMeasurements.cpp
 	$(CC) $(CFLAGS) -c $(INCLUDE) $<
 
 RH_NRF24.o: $(RADIOHEADBASE)/RH_NRF24.cpp
@@ -53,6 +56,8 @@ RasPiRH: RasPiRH.o RH_NRF24.o RHMesh.o RHRouter.o RHReliableDatagram.o RHDatagra
 receiveMeasurements: ReceiveMeasurements.o RH_NRF24.o RHMesh.o RHRouter.o RHReliableDatagram.o RHDatagram.o RasPi.o RHHardwareSPI.o RHNRFSPIDriver.o RHGenericDriver.o RHGenericSPI.o
 	$(CC) $^ $(LIBS) -o receiveMeasurements
 
+collectMeasurements: CollectMeasurements.o RH_NRF24.o RHMesh.o RHRouter.o RHReliableDatagram.o RHDatagram.o RasPi.o RHHardwareSPI.o RHNRFSPIDriver.o RHGenericDriver.o RHGenericSPI.o
+	$(CC) $^ $(LIBS) -o collectMeasurements
 clean:
-	rm -rf *.o RasPiRH receiveMeasurements
+	rm -rf *.o RasPiRH receiveMeasurements collectMeasurements
 
