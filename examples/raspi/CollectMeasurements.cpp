@@ -77,7 +77,7 @@ int main(int argc, const char *argv[])
     uint8_t from, to, id, flags;
 
     /* Begin Reliable Datagram Code */
-    if (manager.sendtoWait(send_buf, sizeof(send_buf), SERVER_ADDRESS) {
+    if (manager.sendtoWait(send_buf, sizeof(send_buf), SERVER_ADDRESS)) {
       // Wait for a message addressed to us from the client
       len = sizeof(receive_buf);
       if (manager.recvfromAck(receive_buf, &len, &from)) {
@@ -85,17 +85,12 @@ int main(int argc, const char *argv[])
         auto const now = std::chrono::system_clock::now();
         std::time_t now_c = std::chrono::system_clock::to_time_t(now);
 
-        std::string iso_date =
-            std::put_time(std::localtime(&now_c), "%Y-%m-%d");
-        std::string time_stamp =
-            std::put_time(std::localtime(&now_c), "Y-%m-%d %H-%M-%S");
-
         memcpy(&temperature, &receive_buf[1], 4);
         memcpy(&humidity, &receive_buf[5], 4);
-        std::cout << time_stamp << " " << humidity << " " << temperature
+        std::cout << std::put_time(std::localtime(&now_c), "Y-%m-%d %H-%M-%S") << " " << humidity << " " << temperature
                   << std::endl;
       }
-      }
+    }
     /* End Reliable Datagram Code */
 
     if (flag) {
