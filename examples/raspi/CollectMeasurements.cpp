@@ -7,7 +7,7 @@
 // Use the Makefile in this directory:
 // cd example/raspi
 // make
-// sudo ./receiveMeasurements
+// sudo ./collectMeasurements
 //
 // Creates a RHReliableDatagram manager and listens and prints for reliable datagrams
 // sent to it on the default Channel 2.
@@ -23,6 +23,7 @@
 #include <RH_NRF24.h>
 
 #include <chrono>
+#include <thread>
 #include <ctime>
 #include <iomanip>
 #include <iostream>
@@ -69,8 +70,6 @@ int main(int argc, const char *argv[])
   float humidity = 0.0;
   float value3 = 0.0;
 
-  std::string const data_path("/home/alarm/data/");
-
   // Begin the main body of code
   while (true) {
     uint8_t len = sizeof(send_buf);
@@ -78,7 +77,6 @@ int main(int argc, const char *argv[])
 
     /* Begin Reliable Datagram Code */
     if (manager.sendtoWait(send_buf, sizeof(send_buf), SERVER_ADDRESS)) {
-      // Wait for a message addressed to us from the client
       len = sizeof(receive_buf);
       if (manager.recvfromAck(receive_buf, &len, &from)) {
 
@@ -97,7 +95,8 @@ int main(int argc, const char *argv[])
       printf("\n---CTRL-C Caught - Exiting---\n");
       break;
     }
-    delay(1000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+    // delay(1000);
   }
   bcm2835_close();
   return 0;
