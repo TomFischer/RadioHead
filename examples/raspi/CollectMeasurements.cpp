@@ -63,7 +63,7 @@ int main(int argc, const char *argv[])
   }
   /* End Reliable Datagram Init Code */
 
-  uint8_t send_buf[RH_NRF24_MAX_MESSAGE_LEN];
+  uint8_t send_buf[] = "request sensor data";
   uint8_t receive_buf[RH_NRF24_MAX_MESSAGE_LEN];
 
   float temperature = 0.0;
@@ -78,14 +78,14 @@ int main(int argc, const char *argv[])
     /* Begin Reliable Datagram Code */
     if (manager.sendtoWait(send_buf, sizeof(send_buf), SERVER_ADDRESS)) {
       len = sizeof(receive_buf);
-      if (manager.recvfromAck(receive_buf, &len, &from)) {
+      if (manager.recvfromAckTimeout(receive_buf, &len, 2000, &from)) {
 
         auto const now = std::chrono::system_clock::now();
         std::time_t now_c = std::chrono::system_clock::to_time_t(now);
 
         memcpy(&temperature, &receive_buf[1], 4);
         memcpy(&humidity, &receive_buf[5], 4);
-        std::cout << std::put_time(std::localtime(&now_c), "Y-%m-%d %H-%M-%S") << " " << humidity << " " << temperature
+        std::cout << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " " << humidity << " " << temperature
                   << std::endl;
       }
     }
