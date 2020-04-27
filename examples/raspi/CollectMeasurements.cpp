@@ -32,7 +32,9 @@
 //Function Definitions
 void sig_handler(int sig);
 
-#define SERVER_ADDRESS 0xa2
+#define SERVER_ADDRESS1 0xa1
+#define SERVER_ADDRESS2 0xa2
+#define SERVER_ADDRESS3 0xa4
 #define CLIENT_ADDRESS 0xa3
 
 // Create an instance of a driver
@@ -76,7 +78,7 @@ int main(int argc, const char *argv[])
     uint8_t from, to, id, flags;
 
     /* Begin Reliable Datagram Code */
-    if (manager.sendtoWait(send_buf, sizeof(send_buf), SERVER_ADDRESS)) {
+    if (manager.sendtoWait(send_buf, sizeof(send_buf), SERVER_ADDRESS1)) {
       len = sizeof(receive_buf);
       if (manager.recvfromAckTimeout(receive_buf, &len, 2000, &from)) {
 
@@ -85,7 +87,32 @@ int main(int argc, const char *argv[])
 
         memcpy(&temperature, &receive_buf[1], 4);
         memcpy(&humidity, &receive_buf[5], 4);
-        std::cout << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " " << humidity << " " << temperature
+        std::cout << SERVER_ADDRESS1 << " " << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " " << humidity << " " << temperature
+                  << std::endl;
+      }
+    }
+    if (manager.sendtoWait(send_buf, sizeof(send_buf), SERVER_ADDRESS2)) {
+      len = sizeof(receive_buf);
+      if (manager.recvfromAckTimeout(receive_buf, &len, 2000, &from)) {
+
+        auto const now = std::chrono::system_clock::now();
+        std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+
+        memcpy(&temperature, &receive_buf[1], 4);
+        memcpy(&humidity, &receive_buf[5], 4);
+        std::cout << SERVER_ADDRESS2 << " " << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " " << humidity << " " << temperature
+                  << std::endl;
+      }
+    }
+    if (manager.sendtoWait(send_buf, sizeof(send_buf), SERVER_ADDRESS3)) {
+      len = sizeof(receive_buf);
+      if (manager.recvfromAckTimeout(receive_buf, &len, 2000, &from)) {
+
+        auto const now = std::chrono::system_clock::now();
+        std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+
+        memcpy(&temperature, &receive_buf[1], 4);
+        std::cout << SERVER_ADDRESS3 << " " << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " " << temperature
                   << std::endl;
       }
     }
