@@ -26,6 +26,9 @@ CollectMeasurements.o: CollectMeasurements.cpp
 RequestMeasurements.o: RequestMeasurements.cpp
 	$(CC) $(CFLAGS) -c $(INCLUDE) $<
 
+RequestMeasurement.o: RequestMeasurement.cpp
+	$(CC) $(CFLAGS) -c $(INCLUDE) $<
+
 RH_NRF24.o: $(RADIOHEADBASE)/RH_NRF24.cpp
 	$(CC) $(CFLAGS) -c $(INCLUDE) $<
 
@@ -65,6 +68,9 @@ collectMeasurements: CollectMeasurements.o RH_NRF24.o RHMesh.o RHRouter.o RHReli
 requestMeasurements: RequestMeasurements.o RH_NRF24.o RHMesh.o RHRouter.o RHReliableDatagram.o RHDatagram.o RasPi.o RHHardwareSPI.o RHNRFSPIDriver.o RHGenericDriver.o RHGenericSPI.o
 	$(CC) $^ $(LIBS) -o requestMeasurements
 
+requestMeasurement: RequestMeasurement.o RH_NRF24.o RHMesh.o RHRouter.o RHReliableDatagram.o RHDatagram.o RasPi.o RHHardwareSPI.o RHNRFSPIDriver.o RHGenericDriver.o RHGenericSPI.o
+	$(CC) $^ $(LIBS) -o requestMeasurement
+
 clean:
-	rm -rf *.o RasPiRH receiveMeasurements requestMeasurements collectMeasurements
+	rm -rf *.o RasPiRH receiveMeasurements requestMeasurements requestMeasurement collectMeasurements
 
