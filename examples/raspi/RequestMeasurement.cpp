@@ -37,7 +37,7 @@ RHReliableDatagram manager(nrf24, CLIENT_ADDRESS);
 //Main Function
 int main(int argc, const char *argv[])
 {
-    uint8_t server_address = static_cast<uint8_t>(std::stoi(argv[1]));
+    uint8_t server_address = std::stoi(argv[1]);
 
   if (!bcm2835_init())
   {
@@ -63,6 +63,7 @@ int main(int argc, const char *argv[])
   // Begin the main body of code
     uint8_t len = sizeof(send_buf);
     uint8_t from, to, id, flags;
+	uint8_t message_type;
 
     /* Begin Reliable Datagram Code */
     if (manager.sendtoWait(send_buf, sizeof(send_buf), server_address)) {
@@ -72,12 +73,24 @@ int main(int argc, const char *argv[])
         auto const now = std::chrono::system_clock::now();
         std::time_t now_c = std::chrono::system_clock::to_time_t(now);
 
+        memcpy(&message_type, &receive_buf[0], 1);
         memcpy(&temperature, &receive_buf[1], 4);
         memcpy(&humidity, &receive_buf[5], 4);
-        std::cout << server_address << " " << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " " << humidity << " " << temperature
+        memcpy(&value3, &receive_buf[9], 4);
+
+		if (message_type == 0x01)
+			std::cout << "normal message was received\n";
+
+        std::cout << int(server_address) << " " <<
+		std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " " <<
+		humidity << " " << temperature
                   << std::endl;
       }
     }
+	else
+	{
+		std::cout << "sending request to " << int(server_address) << " failed.\n";
+	}
     /* End Reliable Datagram Code */
 
   bcm2835_close();
