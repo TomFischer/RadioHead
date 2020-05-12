@@ -34,10 +34,44 @@
 RH_NRF24 nrf24(RPI_V2_GPIO_P1_22, RPI_V2_GPIO_P1_24);
 RHReliableDatagram manager(nrf24, CLIENT_ADDRESS);
 
+/*
+bool requestTemperatureAndHumidity(send_buf, receive_buf, server_address, double
+  uint8_t receive_buf[RH_NRF24_MAX_MESSAGE_LEN];
+double &temperature, double & humidity)
+{
+    if (manager.sendtoWait(send_buf, sizeof(send_buf), server_address)) {
+      len = sizeof(receive_buf);
+      if (manager.recvfromAckTimeout(receive_buf, &len, 2000, &from)) {
+
+        auto const now = std::chrono::system_clock::now();
+        std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+
+        memcpy(&message_type, &receive_buf[0], 1);
+        memcpy(&temperature, &receive_buf[1], 4);
+        memcpy(&humidity, &receive_buf[5], 4);
+
+        std::cout << int(server_address) << " " <<
+		std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " " <<
+		humidity << " " << temperature
+                  << std::endl;
+		return true;
+      }
+	  else
+	  {
+	  	return false;
+	  }
+	}
+	else
+	{
+		return false;
+	}
+}
+*/
+
 //Main Function
 int main(int argc, const char *argv[])
 {
-    uint8_t server_address = std::stoi(argv[1]);
+  uint8_t server_address = std::stoi(argv[1]);
 
   if (!bcm2835_init())
   {
@@ -61,8 +95,8 @@ int main(int argc, const char *argv[])
   float value3 = 0.0;
 
   // Begin the main body of code
-    uint8_t len = sizeof(send_buf);
-    uint8_t from, to, id, flags;
+    uint8_t len = sizeof(receive_buf);
+    uint8_t from = 0;
 	uint8_t message_type;
 
     /* Begin Reliable Datagram Code */
@@ -76,20 +110,42 @@ int main(int argc, const char *argv[])
         memcpy(&message_type, &receive_buf[0], 1);
         memcpy(&temperature, &receive_buf[1], 4);
         memcpy(&humidity, &receive_buf[5], 4);
-        memcpy(&value3, &receive_buf[9], 4);
-
-		if (message_type == 0x01)
-			std::cout << "normal message was received\n";
 
         std::cout << int(server_address) << " " <<
 		std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " " <<
 		humidity << " " << temperature
                   << std::endl;
       }
-    }
-	else
-	{
-		std::cout << "sending request to " << int(server_address) << " failed.\n";
+	  else
+	  {
+	  	// did not receive acknowledgement - send request again
+	    if (manager.sendtoWait(send_buf, sizeof(send_buf), server_address)) {
+	      len = sizeof(receive_buf);
+	      if (manager.recvfromAckTimeout(receive_buf, &len, 2000, &from)) {
+	
+	        auto const now = std::chrono::system_clock::now();
+	        std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+	
+	        memcpy(&message_type, &receive_buf[0], 1);
+	        memcpy(&temperature, &receive_buf[1], 4);
+	        memcpy(&humidity, &receive_buf[5], 4);
+	
+	        std::cout << int(server_address) << " " <<
+			std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " " <<
+			humidity << " " << temperature
+	                  << std::endl;
+	      }
+		  else
+		  {
+				std::cout << "Second try: Didn't recvfromAckTimeout(receive_buf, &len, 2000, " <<
+			int(from) << ")." << std::endl;
+		  }
+		}
+		else
+		{
+			std::cout << "Second try: sending request to " << int(server_address) << " failed.\n";
+		}
+      }
 	}
     /* End Reliable Datagram Code */
 
