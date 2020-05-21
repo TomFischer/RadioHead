@@ -65,6 +65,13 @@ int main(int argc, const char *argv[])
     uint8_t from = 0;
 	uint8_t message_type;
 
+	auto copy_buffer = [&receive_buf, &message_type, &temperature, &humidity]()
+	{
+        memcpy(&message_type, &receive_buf[0], 1);
+        memcpy(&temperature, &receive_buf[1], 4);
+        memcpy(&humidity, &receive_buf[5], 4);
+	};
+
     /* Begin Reliable Datagram Code */
     if (manager.sendtoWait(send_buf, sizeof(send_buf), server_address)) {
       auto const now = std::chrono::system_clock::now();
@@ -73,10 +80,7 @@ int main(int argc, const char *argv[])
       len = sizeof(receive_buf);
       if (manager.recvfromAckTimeout(receive_buf, &len, 2000, &from)) {
 
-        memcpy(&message_type, &receive_buf[0], 1);
-        memcpy(&temperature, &receive_buf[1], 4);
-        memcpy(&humidity, &receive_buf[5], 4);
-
+		copy_buffer();
         std::cout << int(server_address) << " " <<
 		std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " " <<
 		humidity << " " << temperature
@@ -89,9 +93,7 @@ int main(int argc, const char *argv[])
 	      len = sizeof(receive_buf);
 	      if (manager.recvfromAckTimeout(receive_buf, &len, 2000, &from)) {
 	
-	        memcpy(&message_type, &receive_buf[0], 1);
-	        memcpy(&temperature, &receive_buf[1], 4);
-	        memcpy(&humidity, &receive_buf[5], 4);
+			copy_buffer();
 	
 	        std::cout << int(server_address) << " " <<
 			std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " " <<
