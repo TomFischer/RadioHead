@@ -92,14 +92,7 @@ int main(int argc, const char *argv[]) {
                     << std::put_time(std::localtime(&now_c),
                                      "%Y-%m-%d %H:%M:%S")
                     << " " << humidity << " " << temperature << std::endl;
-        } else {
-          std::cout << "Second try: Didn't recvfromAckTimeout(receive_buf, "
-                       "&len, 2000, "
-                    << int(from) << ")." << std::endl;
         }
-      } else {
-        std::cout << "Second try: sending request to " << int(server_address)
-                  << " failed.\n";
       }
     }
   }
