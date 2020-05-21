@@ -29,12 +29,10 @@
 #define CLIENT_ADDRESS 0xa3
 
 //Main Function
-int main(int argc, const char *argv[])
-{
+int main(int argc, const char *argv[]) {
   uint8_t server_address = std::stoi(argv[1]);
 
-  if (!bcm2835_init())
-  {
+  if (!bcm2835_init()) {
     std::cout << "\n\nRasPiRH Tester Startup Failed - bcm2835_init failed.\n\n";
     return 1;
   }
@@ -46,8 +44,7 @@ int main(int argc, const char *argv[])
   RHReliableDatagram manager(nrf24, CLIENT_ADDRESS);
 
   /* Begin Reliable Datagram Init Code */
-  if (!manager.init())
-  {
+  if (!manager.init()) {
     std::cout << "RHReliableDatagram obj - Init failed.\n";
     return 1;
   }
@@ -61,58 +58,52 @@ int main(int argc, const char *argv[])
   float value3 = 0.0;
 
   // Begin the main body of code
-    uint8_t len = sizeof(receive_buf);
-    uint8_t from = 0;
-	uint8_t message_type;
+  uint8_t len = sizeof(receive_buf);
+  uint8_t from = 0;
+  uint8_t message_type;
 
-	auto copy_buffer = [&receive_buf, &message_type, &temperature, &humidity]()
-	{
-        memcpy(&message_type, &receive_buf[0], 1);
-        memcpy(&temperature, &receive_buf[1], 4);
-        memcpy(&humidity, &receive_buf[5], 4);
-	};
+  auto copy_buffer = [&receive_buf, &message_type, &temperature, &humidity]() {
+    memcpy(&message_type, &receive_buf[0], 1);
+    memcpy(&temperature, &receive_buf[1], 4);
+    memcpy(&humidity, &receive_buf[5], 4);
+  };
 
-    /* Begin Reliable Datagram Code */
-    if (manager.sendtoWait(send_buf, sizeof(send_buf), server_address)) {
-      auto const now = std::chrono::system_clock::now();
-      std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+  /* Begin Reliable Datagram Code */
+  if (manager.sendtoWait(send_buf, sizeof(send_buf), server_address)) {
+    auto const now = std::chrono::system_clock::now();
+    std::time_t now_c = std::chrono::system_clock::to_time_t(now);
 
-      len = sizeof(receive_buf);
-      if (manager.recvfromAckTimeout(receive_buf, &len, 2000, &from)) {
+    len = sizeof(receive_buf);
+    if (manager.recvfromAckTimeout(receive_buf, &len, 2000, &from)) {
 
-		copy_buffer();
-        std::cout << int(server_address) << " " <<
-		std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " " <<
-		humidity << " " << temperature
-                  << std::endl;
+      copy_buffer();
+      std::cout << int(server_address) << " "
+                << std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S")
+                << " " << humidity << " " << temperature << std::endl;
+    } else {
+      // did not receive acknowledgement - send request again
+      if (manager.sendtoWait(send_buf, sizeof(send_buf), server_address)) {
+        len = sizeof(receive_buf);
+        if (manager.recvfromAckTimeout(receive_buf, &len, 2000, &from)) {
+
+          copy_buffer();
+
+          std::cout << int(server_address) << " "
+                    << std::put_time(std::localtime(&now_c),
+                                     "%Y-%m-%d %H:%M:%S")
+                    << " " << humidity << " " << temperature << std::endl;
+        } else {
+          std::cout << "Second try: Didn't recvfromAckTimeout(receive_buf, "
+                       "&len, 2000, "
+                    << int(from) << ")." << std::endl;
+        }
+      } else {
+        std::cout << "Second try: sending request to " << int(server_address)
+                  << " failed.\n";
       }
-	  else
-	  {
-	  	// did not receive acknowledgement - send request again
-	    if (manager.sendtoWait(send_buf, sizeof(send_buf), server_address)) {
-	      len = sizeof(receive_buf);
-	      if (manager.recvfromAckTimeout(receive_buf, &len, 2000, &from)) {
-	
-			copy_buffer();
-	
-	        std::cout << int(server_address) << " " <<
-			std::put_time(std::localtime(&now_c), "%Y-%m-%d %H:%M:%S") << " " <<
-			humidity << " " << temperature
-	                  << std::endl;
-	      }
-		  else
-		  {
-				std::cout << "Second try: Didn't recvfromAckTimeout(receive_buf, &len, 2000, " <<
-			int(from) << ")." << std::endl;
-		  }
-		}
-		else
-		{
-			std::cout << "Second try: sending request to " << int(server_address) << " failed.\n";
-		}
-      }
-	}
-    /* End Reliable Datagram Code */
+    }
+  }
+  /* End Reliable Datagram Code */
 
   bcm2835_close();
   return EXIT_SUCCESS;
