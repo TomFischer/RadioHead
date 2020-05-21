@@ -28,11 +28,6 @@
 
 #define CLIENT_ADDRESS 0xa3
 
-// Create an instance of a driver
-// Chip enable is pin 22
-// Slave Select is pin 24
-RH_NRF24 nrf24(RPI_V2_GPIO_P1_22, RPI_V2_GPIO_P1_24);
-RHReliableDatagram manager(nrf24, CLIENT_ADDRESS);
 
 /*
 bool requestTemperatureAndHumidity(send_buf, receive_buf, server_address, double
@@ -79,6 +74,12 @@ int main(int argc, const char *argv[])
     return 1;
   }
 
+  // Create an instance of a driver
+  // Chip enable is pin 22
+  // Slave Select is pin 24
+  RH_NRF24 nrf24(RPI_V2_GPIO_P1_22, RPI_V2_GPIO_P1_24);
+  RHReliableDatagram manager(nrf24, CLIENT_ADDRESS);
+
   /* Begin Reliable Datagram Init Code */
   if (!manager.init())
   {
@@ -101,11 +102,11 @@ int main(int argc, const char *argv[])
 
     /* Begin Reliable Datagram Code */
     if (manager.sendtoWait(send_buf, sizeof(send_buf), server_address)) {
+      auto const now = std::chrono::system_clock::now();
+      std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+
       len = sizeof(receive_buf);
       if (manager.recvfromAckTimeout(receive_buf, &len, 2000, &from)) {
-
-        auto const now = std::chrono::system_clock::now();
-        std::time_t now_c = std::chrono::system_clock::to_time_t(now);
 
         memcpy(&message_type, &receive_buf[0], 1);
         memcpy(&temperature, &receive_buf[1], 4);
@@ -122,9 +123,6 @@ int main(int argc, const char *argv[])
 	    if (manager.sendtoWait(send_buf, sizeof(send_buf), server_address)) {
 	      len = sizeof(receive_buf);
 	      if (manager.recvfromAckTimeout(receive_buf, &len, 2000, &from)) {
-	
-	        auto const now = std::chrono::system_clock::now();
-	        std::time_t now_c = std::chrono::system_clock::to_time_t(now);
 	
 	        memcpy(&message_type, &receive_buf[0], 1);
 	        memcpy(&temperature, &receive_buf[1], 4);
